@@ -16,7 +16,7 @@ config_mysql3 = { 'user' : 'mysql', 'password' : 'mysql', 'host' : 'mydocker', '
 config_mysql4 = { 'user' : 'mysql', 'password' : 'mysql', 'host' : 'mydocker', 'port' : 4004 }
 config_mysql5 = { 'user' : 'mysql', 'password' : 'mysql', 'host' : 'mydocker', 'port' : 4005 }
 
-MAX_RECORDS = 2
+MAX_RECORDS = 5
 MAX_DATABASES = 1
 
 DATABASE_PREFIX="shard"
@@ -106,17 +106,32 @@ def setup_replication(config):
     cursor.close()
     mysqldb.close()
 
-def load_test_data(config):
+def load_test_data(thread_id, config):
     server =  "%s:%d" %(config['host'], config['port'])
     log.info(" [%s] Creating schema" % server)
     mysqldb = __mysql_connect(config)
     mysqldb.autocommit = True
     cursor = mysqldb.cursor()
+
+    # init
+    increment = len(sharded_servers)
+    log.info("[%s] setting offset: %d, increment %d" %(server, thread_id, increment))
+    execute(cursor, "set global auto_increment_offset=%d; set global auto_increment_increment=%d;" % (thread_id, increment))
+
+    # disconnect, reconnect to get auto increments to be effective
+    cursor.close()
+    mysqldb.close()
+    mysqldb = __mysql_connect(config)
+    mysqldb.autocommit = True
+    cursor = mysqldb.cursor()
+
+    # create 
     for i in range(0, MAX_DATABASES):
         dbname = "%s%d" %(DATABASE_PREFIX, i+1)
         query = "CREATE DATABASE IF NOT EXISTS %s; use %s; DROP TABLE IF EXISTS test; CREATE TABLE IF NOT EXISTS test(id int not null auto_increment primary key, name varchar(12))" %(dbname, dbname)
         execute(cursor, query);
 
+    # load
     log.info(" [%s] Loading %d records into test tables" %(server, MAX_RECORDS))
     for i in range(0, MAX_DATABASES):
         db = "%s%d" %(DATABASE_PREFIX, i+1)
@@ -148,10 +163,10 @@ def main(argv):
 
     threads = []
 
-    threads.append(Thread(target=load_test_data, args=[config_mysql1]))
-    threads.append(Thread(target=load_test_data, args=[config_mysql2]))
-    threads.append(Thread(target=load_test_data, args=[config_mysql3]))
-    threads.append(Thread(target=load_test_data, args=[config_mysql4]))
+    threads.append(Thread(target=load_test_data, args=(1,config_mysql1)))
+    threads.append(Thread(target=load_test_data, args=(2,config_mysql2)))
+    threads.append(Thread(target=load_test_data, args=(3,config_mysql3)))
+    threads.append(Thread(target=load_test_data, args=(4,config_mysql4)))
 
     # start 
     log.info("Launching all threads...")

@@ -17,6 +17,7 @@ task :start do
     run_command "docker-compose -p #{PROJECT_NAME} up -d"
     print "containers status"
     run_command "docker ps -a | grep #{PROJECT_NAME}"
+    Rake::Task["init"].invoke
 end
 
 desc "stop and remove all services"
@@ -38,15 +39,15 @@ end
 desc "initialize containers"
 task :init do
     print 'Creating necessary user accounts'
-    run_command "docker exec -it #{PROJECT_NAME}_mysql1_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'; set global auto_increment_offset=1; set global auto_increment_increment=4;\""
-    run_command "docker exec -it #{PROJECT_NAME}_mysql2_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'; set global auto_increment_offset=2; set global auto_increment_increment=4;\""
-    run_command "docker exec -it #{PROJECT_NAME}_mysql3_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'; set global auto_increment_offset=3; set global auto_increment_increment=4;\""
-    run_command "docker exec -it #{PROJECT_NAME}_mysql4_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'; set global auto_increment_offset=4; set global auto_increment_increment=4;\""
-    run_command "docker exec -it #{PROJECT_NAME}_mysql5_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'; set global auto_increment_offset=5; set global auto_increment_increment=4;\""
+    run_command "docker exec -it #{PROJECT_NAME}_mysql1_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'\""
+    run_command "docker exec -it #{PROJECT_NAME}_mysql2_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'\""
+    run_command "docker exec -it #{PROJECT_NAME}_mysql3_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'\""
+    run_command "docker exec -it #{PROJECT_NAME}_mysql4_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'\""
+    run_command "docker exec -it #{PROJECT_NAME}_mysql5_1 /usr/bin/mysql -e \"grant all on *.* to 'mysql'@'%' identified by 'mysql'\""
 end
 
 desc 'initialize all mysql services and test the replication'
-task :test => [:init] do
+task :test do
     run_command "python test.py"
     puts "Checking the records in main shard (should be multiples of all shards)"
     run_command "docker exec -it #{PROJECT_NAME}_mysql5_1 /usr/bin/mysql -v -v -e \"select count(*) from shardm.test\""
