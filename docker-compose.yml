@@ -36,4 +36,4 @@ mysql5:
     - mysql2
     - mysql3
     - mysql4
-    command: mysqld --console --server-id=5 --master-info-repository=TABLE --relay-log-info-repository=TABLE --slave-skip-errors=ddl_exist_errors --replicate-rewrite-db="shard1->shardm" --replicate-rewrite-db="shard2->shardm" --replicate-rewrite-db="shard3->shardm" --replicate-rewrite-db="shard4->shardm"
+    command: mysqld --console --server-id=5 --master-info-repository=TABLE --relay-log-info-repository=TABLE --slave-skip-errors=ddl_exist_errors

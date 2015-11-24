@@ -1,4 +1,4 @@
-    # Rakefile
+# Rakefile
 
 # what's the name of this project
 PROJECT_NAME = 'mysqlrepl'

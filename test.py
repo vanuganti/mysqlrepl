@@ -16,8 +16,10 @@ config_mysql3 = { 'user' : 'mysql', 'password' : 'mysql', 'host' : 'mydocker', '
 config_mysql4 = { 'user' : 'mysql', 'password' : 'mysql', 'host' : 'mydocker', 'port' : 4004 }
 config_mysql5 = { 'user' : 'mysql', 'password' : 'mysql', 'host' : 'mydocker', 'port' : 4005 }
 
-MAX_RECORDS = 5
-MAX_SHARDS = 1
+MAX_RECORDS = 2
+MAX_DATABASES = 1
+
+DATABASE_PREFIX="shard"
 
 sharded_servers=['mysql1', 'mysql2', 'mysql3', 'mysql4']
 sharded_master="mysql5"
@@ -77,9 +79,9 @@ def execute(cursor, query, results=False):
 def setup_replication_rewrite(server, cursor):
     log.info("[%s] Setting replication filters to re-write all shard databases to single database" % server)
     query = "CHANGE REPLICATION FILTER REPLICATE_REWRITE_DB = ("
-    for shard in range(0,MAX_SHARDS):
-        database_name = "shard%d" %(shard+1)
-        if shard > 1:
+    for i in range(0,MAX_DATABASES):
+        database_name = "%s%d" %(DATABASE_PREFIX, i+1)
+        if i > 1:
             query += ","
         query += "(%s, shardm)" %(database_name)
     query += ")"
@@ -91,7 +93,7 @@ def setup_replication(config):
     cursor = mysqldb.cursor()
 
     execute(cursor, "CREATE DATABASE IF NOT EXISTS shardm")
-    #setup_replication_rewrite(server, cursor)
+    setup_replication_rewrite(server, cursor)
 
     log.info("[%s] Setting replication for %d servers" % (server, len(sharded_servers)))
     for host in sharded_servers:
@@ -110,14 +112,14 @@ def load_test_data(config):
     mysqldb = __mysql_connect(config)
     mysqldb.autocommit = True
     cursor = mysqldb.cursor()
-    for shard in range(0, MAX_SHARDS):
-        db = "shard%d" %(shard+1)
-        query = "CREATE DATABASE IF NOT EXISTS %s; use %s; DROP TABLE IF EXISTS test; CREATE TABLE IF NOT EXISTS test(id int not null auto_increment primary key, name varchar(12))" %(db, db)
+    for i in range(0, MAX_DATABASES):
+        dbname = "%s%d" %(DATABASE_PREFIX, i+1)
+        query = "CREATE DATABASE IF NOT EXISTS %s; use %s; DROP TABLE IF EXISTS test; CREATE TABLE IF NOT EXISTS test(id int not null auto_increment primary key, name varchar(12))" %(dbname, dbname)
         execute(cursor, query);
 
     log.info(" [%s] Loading %d records into test tables" %(server, MAX_RECORDS))
-    for shard in range(0, MAX_SHARDS):
-        db = "shard%d" %(shard+1)
+    for i in range(0, MAX_DATABASES):
+        db = "%s%d" %(DATABASE_PREFIX, i+1)
         cursor.execute("USE %s" % db)
         for id in range(0, MAX_RECORDS):
             str = "'row data %d'" %(id+1)
@@ -133,7 +135,7 @@ def validate_data(config):
     mysqldb = __mysql_connect(config)
     cursor = mysqldb.cursor()
     count = 0
-    expected = 1 * MAX_RECORDS * (len(sharded_servers))
+    expected = (1 * MAX_RECORDS * len(sharded_servers) * MAX_DATABASES)
     cursor.execute("SELECT count(*) as count FROM shardm.test")
     data = cursor.fetchall()
     count = data[0][0]
