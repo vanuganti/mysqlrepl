@@ -1,26 +1,26 @@
 mysql1:
-    build: mysql
+    build: mysql-5.6
     hostname: mysql1
     ports:
     - "4001:3306"
     command: mysqld --console --server-id=1 --log-bin=mysql-bin
 
 mysql2:
-    build: mysql
+    build: mysql-5.6
     hostname: mysql2
     ports:
     - "4002:3306"
     command: mysqld --console --server-id=2 --log-bin=mysql-bin 
 
 mysql3:
-    build: mysql
+    build: mysql-5.6
     hostname: mysql3
     ports:
     - "4003:3306"
     command: mysqld --console --server-id=3 --log-bin=mysql-bin
 
 mysql4:
-    build: mysql
+    build: mysql-5.6
     hostname: mysql4
     ports:
     - "4004:3306"
