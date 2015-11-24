@@ -4,6 +4,7 @@ Docker based environment to test MySQL 5.7 multi source replication from multipl
 
 ## Requirements:
 * [Docker](https://www.docker.com/)
+* [Docker Compose](https://docs.docker.com/compose/)
 * [Rakefile](http://docs.seattlerb.org/rake/)
 * [Python](https://www.python.org/)
 * [Python MySQL connector](https://dev.mysql.com/downloads/connector/python/2.1.html)
