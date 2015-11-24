@@ -1,0 +1,39 @@
+mysql1:
+    build: mysql
+    hostname: mysql1
+    ports:
+    - "4001:3306"
+    command: mysqld --console --server-id=1 --log-bin=mysql-bin
+
+mysql2:
+    build: mysql
+    hostname: mysql2
+    ports:
+    - "4002:3306"
+    command: mysqld --console --server-id=2 --log-bin=mysql-bin 
+
+mysql3:
+    build: mysql
+    hostname: mysql3
+    ports:
+    - "4003:3306"
+    command: mysqld --console --server-id=3 --log-bin=mysql-bin
+
+mysql4:
+    build: mysql
+    hostname: mysql4
+    ports:
+    - "4004:3306"
+    command: mysqld --console --server-id=4 --log-bin=mysql-bin
+
+mysql5:
+    build: mysql-5.7
+    hostname: mysql5
+    ports:
+    - "4005:3306"
+    links:
+    - mysql1
+    - mysql2
+    - mysql3
+    - mysql4
+    command: mysqld --console --server-id=5 --master-info-repository=TABLE --relay-log-info-repository=TABLE --slave-skip-errors=ddl_exist_errors --replicate-rewrite-db="shard1->shardm" --replicate-rewrite-db="shard2->shardm" --replicate-rewrite-db="shard3->shardm" --replicate-rewrite-db="shard4->shardm"
