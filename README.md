@@ -1,11 +1,11 @@
-Multi source replication test from multiple mysql servers  
-=========================================================
-Docker based environment to test MySQL 5.7 multi source replication from multiple servers to single servers
+MySQL Multi source replication demo
+===================================
+Docker based environment to test MySQL 5.7 multi source replication from multiple servers to single MySQL server. The test uses 4 MySQL 5.6 servers as master database servers and one 5.7 server as slave; which aggregates data from all databases to single database.
 
 ## Requirements:
-* [Docker](https://www.docker.com/) setup
+* [Docker](https://www.docker.com/)
 * [Rakefile](http://docs.seattlerb.org/rake/)
-* Python
+* [Python](https://www.python.org/)
 * [Python MySQL connector](https://dev.mysql.com/downloads/connector/python/2.1.html)
 
 ## Build the containers
